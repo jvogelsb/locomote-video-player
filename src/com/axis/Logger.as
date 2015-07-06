@@ -8,10 +8,16 @@ package com.axis {
       if (Player.config.debugLogger) {
         trace.apply(null, args);
       }
-
-      var functionName:String = "LocomoteMap['" + Player.locomoteID + "'].__playerEvent";
-      args.unshift(functionName, 'log');
-      ExternalInterface.call.apply(ExternalInterface, args);
+        var message:String = "";
+        for (var i:String in args) {
+          message += ' ';
+          if ( !args[i] is String) {
+              message += args[i].toString();
+          } else {
+              message += args[i]
+          }
+        }
+        ExternalInterface.call("console.log", message);
     }
   }
 }
