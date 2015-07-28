@@ -74,6 +74,19 @@ package com.axis.rtspclient {
           currentMediaBlock = new Object();
           currentMediaBlock.rtpmap = new Object();
           parseMediaDescription(line, currentMediaBlock);
+          // Check to see if it is a static payload type, if so automatically populate the the attributes
+          switch(currentMediaBlock.fmt) {
+            case 0:   // PCMU
+              currentMediaBlock.rtpmap[0] = new Object();
+              currentMediaBlock.rtpmap[0].name  = 'PCMU';
+              currentMediaBlock.rtpmap[0].clock = 8000;
+              break;
+            case 8:   // PCMA
+              currentMediaBlock.rtpmap[0] = new Object();
+              currentMediaBlock.rtpmap[0].name  = 'PCMA';
+              currentMediaBlock.rtpmap[0].clock = 8000;
+              break;
+          }
           break;
 
         case 'a':

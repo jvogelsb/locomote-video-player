@@ -200,24 +200,32 @@ package com.axis.rtspclient {
       /* Method call */
       size += writeString("onMetaData");
 
-      /* Decode the base64 encoded parameter sets to pass to parseSPS */
-      var sets:Array = sdp.getMediaBlock('video').fmtp['sprop-parameter-sets'].split(',');
-      var spsdec:Base64Decoder = new Base64Decoder();
-      spsdec.decode(sets[0]);
-      var sps:BitArray = new BitArray(spsdec.toByteArray());
-      var params:Object = parseSPS(sps);
-      Logger.log('FLVMux: stream params = ', params);
-
       /* Arguments */
-      size += writeECMAArray({
-        videocodecid    : 7.0, /* Only support AVC (H.264) */
-        width           : params.width,
-        height          : params.height,
-        avcprofile      : params.profile,
-        avclevel        : params.level,
-        metadatacreator : "Locomote FLV Muxer",
-        creationdate    : new Date().toString()
-      });
+       var metaDataObject:Object = {
+          metadatacreator : "Locomote FLV Muxer",
+          creationdate    : new Date().toString()
+         }
+
+      if (sdp.getMediaBlock('video')) {
+          /* Decode the base64 encoded parameter sets to pass to parseSPS */
+          var sets:Array = sdp.getMediaBlock('video').fmtp['sprop-parameter-sets'].split(',');
+          var spsdec:Base64Decoder = new Base64Decoder();
+          spsdec.decode(sets[0]);
+          var sps:BitArray = new BitArray(spsdec.toByteArray());
+          var params:Object = parseSPS(sps);
+          Logger.log('FLVMux: stream params = ', params);
+          metaDataObject["videocodecid"] = 7.0
+          /* Only support AVC (H.264) */
+          metaDataObject["width"] = params.width
+          metaDataObject["height"] = params.height
+          metaDataObject["avcprofile"] = params.profile
+          metaDataObject["avclevel"] = params.level
+      }
+
+      if (sdp.getMediaBlock('audio')) {
+          // TODO: Do we want to add audio meta data?
+      }
+      size += writeECMAArray(metaDataObject);
 
       container.writeUnsignedInt(size); // Previous tag size
 
@@ -304,6 +312,13 @@ package com.axis.rtspclient {
           sampling: 0x0, /* Doesn't matter. Rate is fixed at 8 kHz when format = 0x7 */
           depth: 0x1, /* 16 bits per sample, but why? */
           type: 0x0 /* Mono */
+        };
+      case 'pcmu':
+        return {
+          format: 0x8,    /* Logarithmic G.711 mu-law  */
+          sampling: 0x0,  /* Doesn't matter. Rate is fixed at 8 kHz when format = 0x8 */
+          depth: 0x1,     /* 16 bits per sample since it is a compressed format */
+          type: 0x0       /* Mono */
         };
       default:
         return false;
@@ -473,6 +488,11 @@ package com.axis.rtspclient {
 
     public function onPCMAFrame(pcmaframe:PCMAFrame):void {
       createAudioTag('pcma', pcmaframe);
+      pushData();
+    }
+
+    public function onPCMUFrame(pcmuframe:PCMUFrame):void {
+      createAudioTag('pcmu', pcmuframe);
       pushData();
     }
 
