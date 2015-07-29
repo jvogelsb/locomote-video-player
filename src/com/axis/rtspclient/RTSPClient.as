@@ -49,6 +49,7 @@ package com.axis.rtspclient {
 
       private var urlParsed:Object;
       private var cSeq:uint = 1;
+      private var ssrc:uint = uint(Math.random() * uint.MAX_VALUE)
       private var session:String;
       private var sessionTimeout:uint = 60;                           // session timeout in secs
       private var contentBase:String;
@@ -72,6 +73,8 @@ package com.axis.rtspclient {
       private var keepAliveTimer:Timer;
 
       private var nc:NetConnection = null;
+
+      private var rtpSourceDB:Object = {};
 
       public function RTSPClient(urlParsed:Object, handle:IRTSPHandle) {
           this.userAgent = "Locomote " + StringUtil.trim(new Version().toString());
@@ -315,8 +318,8 @@ package com.axis.rtspclient {
                       Logger.log("RTSP: session: " + session);
                       if (temp.length > 1) {
                           sessionTimeout = temp[1].split("=")[1];
-                          this.keepAliveTimer = new Timer((sessionTimeout - 5) * 1000, 1);
                           if (this.keepAliveTimer == null) {
+                              this.keepAliveTimer = new Timer((sessionTimeout - 5) * 1000, 1);
                               this.keepAliveTimer.start()
                               this.keepAliveTimer.addEventListener(TimerEvent.TIMER_COMPLETE, keepAliveTimerHandler);
                           }
@@ -433,6 +436,12 @@ package com.axis.rtspclient {
               /* We're discarding the RTCP counter parts for now */
               var rtppkt:RTP = new RTP(pkgData, sdp);
               dispatchEvent(rtppkt);
+
+             // Check if this is a known source
+             var rtpSource = rtpSourceDB[rtppkt.ssrc];
+             if (!rtpSource) {
+               rtpSourceDB[rtppkt.ssrc] = new RTPSource(rtppkt, sdp)
+             }
           }
 
           requestReset();
@@ -630,20 +639,30 @@ package com.axis.rtspclient {
       }
 
       private function sendKeepAlive():void {
-          // Send an Options command with the session id to keep connection alive.
-          var req:String =
-              "OPTIONS * RTSP/1.0\r\n" +
-              "CSeq: " + (++cSeq) + "\r\n" +
-              "User-Agent: " + userAgent + "\r\n" +
-              "Session: " + session + "\r\n" +
-              "\r\n";
-
-          handle.writeUTFBytes(req);
+        // Send an empty Receiver Report to keep connection alive.
+        Logger.log("Sending keep alive...")
+        for (var source:String in rtpSourceDB) {
+          sendRRPacket(rtpSourceDB[source]);
+        }
       }
 
       private function keepAliveTimerHandler(e:TimerEvent):void {
           this.keepAliveTimer.start();
           this.sendKeepAlive();
       }
+
+      public function sendRRPacket(source:RTPSource):void {
+        Logger.log("Sending keep alive...")
+
+        var header:uint = 0
+        header = 0x80000000;    // version 2, no padding
+        header |= 201<<16;      // RR pkt type
+        header |= 1;            // length (numWords(including header) - 1)
+
+        var pkt:ByteArray = new ByteArray();
+        pkt.writeUnsignedInt(header);
+        pkt.writeUnsignedInt(this.ssrc);
+        handle.sendRTCPPacket(pkt);
+    }
   }
 }
