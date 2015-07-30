@@ -48,7 +48,8 @@ package {
     private static const EVENT_FULLSCREEN_EXITED:String  = "fullscreenExited";
 
     public static var config:Object = {
-      'buffer': 3,
+      'buffer': 0,
+      'bufferTimeMax': 0,
       'connectionTimeout': 10,
       'scaleUp': false,
       'allowFullscreen': true,
@@ -169,6 +170,18 @@ package {
           }
         } else {
             config.buffer = iconfig.buffer;
+        }
+      }
+
+      if (iconfig.bufferTimeMax !== undefined) {
+        if (this.client) {
+          if (false === this.client.setBufferTimeMax(config.bufferTimeMax)) {
+            ErrorManager.dispatchError(830);
+          } else {
+            config.bufferTimeMax = iconfig.bufferTimeMax;
+          }
+        } else {
+            config.bufferTimeMax = iconfig.bufferTimeMax;
         }
       }
 
