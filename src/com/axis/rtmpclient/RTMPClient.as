@@ -87,6 +87,13 @@ package com.axis.rtmpclient {
       return true;
     }
 
+    public function setBufferTimeMax(seconds:Number):Boolean {
+      this.ns.bufferTimeMax = seconds;
+      this.ns.pause();
+      this.ns.resume();
+      return true;
+    }
+
     private function onConnectionStatus(event:NetStatusEvent):void {
       if ('NetConnection.Connect.Success' === event.info.code) {
         Logger.log('RTMPClient: connected');

@@ -166,6 +166,14 @@ package com.axis.rtspclient {
           return true;
       }
 
+      public function setBufferTimeMax(seconds:Number):Boolean {
+        this.ns.bufferTimeMax = seconds;
+        this.ns.close();
+        dispatchEvent(new ClientEvent(ClientEvent.PAUSED, { 'reason': 'buffering' }));
+        this.ns.play(null);
+        return true;
+      }
+
       private function onClose(event:Event):void {
           if (state === STATE_TEARDOWN) {
               this.ns.dispose();

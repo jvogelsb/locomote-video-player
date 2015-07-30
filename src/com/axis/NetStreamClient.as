@@ -40,6 +40,7 @@ package com.axis {
 
     protected function setupNetStream():void {
       this.ns.bufferTime = Player.config.buffer;
+      this.ns.bufferTimeMax = Player.config.bufferTimeMax;
       this.ns.client = this;
       this.onXMPData = onXMPDataHandler;
       this.onCuePoint = onCuePointHandler;

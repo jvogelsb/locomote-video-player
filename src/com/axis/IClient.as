@@ -64,6 +64,12 @@ package com.axis {
      */
     function setBuffer(seconds:Number):Boolean;
 
+     /**
+     * Called when the client should buffer a certain amount seconds
+     * before continuing playback.
+     */
+    function setBufferTimeMax(seconds:Number):Boolean;
+
     /**
      * If the stream the client currently is playing has video.
      */

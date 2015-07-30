@@ -76,6 +76,10 @@ package com.axis.mjpegclient {
       return false;
     }
 
+    public function setBufferTimeMax(seconds:Number):Boolean {
+      return false;
+    }
+
     public function hasVideo():Boolean {
       return true;
     };
