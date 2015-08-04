@@ -47,6 +47,13 @@ package {
     private static const EVENT_FULLSCREEN_ENTERED:String  = "fullscreenEntered";
     private static const EVENT_FULLSCREEN_EXITED:String  = "fullscreenExited";
 
+    public static const STATE_STARTING:String  = "starting";
+    public static const STATE_PLAYING:String  = "playing";
+    public static const STATE_PAUSED:String  = "paused";
+    public static const STATE_STOPPING:String  = "stopping";
+    public static const STATE_STOPPED:String  = "stopped";
+
+
     public static var config:Object = {
       'buffer': 0,
       'bufferTimeMax': 0,
@@ -61,7 +68,7 @@ package {
     private var urlParsed:Object;
     private var savedSpeakerVolume:Number;
     private var fullscreenAllowed:Boolean = true;
-    private var currentState:String = "stopped";
+    private var currentState:String = STATE_STOPPED;
     private var streamHasAudio:Boolean = false;
     private var streamHasVideo:Boolean = false;
     private var newPlaylistItem:Boolean = false;
@@ -90,6 +97,7 @@ package {
 
       /* Fullscreen support setup */
       this.stage.doubleClickEnabled = true;
+      this.stage.addEventListener(MouseEvent.CLICK, togglePlay);
       this.stage.addEventListener(MouseEvent.DOUBLE_CLICK, fullscreen);
       this.stage.addEventListener(Event.FULLSCREEN, function(event:Event):void {
         (StageDisplayState.NORMAL === stage.displayState) ? callAPI(EVENT_FULLSCREEN_EXITED) : callAPI(EVENT_FULLSCREEN_ENTERED);
@@ -135,6 +143,18 @@ package {
         this.stage.displayState = (StageDisplayState.NORMAL === stage.displayState) ?
           StageDisplayState.FULL_SCREEN : StageDisplayState.NORMAL;
       }
+    }
+
+    public function togglePlay(event:MouseEvent):void {
+        // Assuming a live stream, currentState == STATE_PAUSED only if not getting data. Handle as if it is playing
+        if (this.currentState == STATE_PLAYING ||
+            this.currentState === STATE_PAUSED) {
+            this.stop()
+        }
+        else if (this.currentState === STATE_STOPPED) {
+            this.start()
+        }
+        // if (this.currentState === STATE_STARTING || this.currentState === STATE_STOPPING) don't do anything
     }
 
     public function videoResize():void {
@@ -232,6 +252,7 @@ package {
     }
 
     private function start():void {
+      this.currentState = STATE_STARTING;
       switch (urlParsed.protocol) {
       case 'rtsph':
         /* RTSP over HTTP */
@@ -302,7 +323,8 @@ package {
         return;
       }
 
-      this.currentState = "stopped";
+      this.currentState = STATE_STOPPING;
+      this.muteSpeaker();
       this.streamHasAudio = false;
       this.streamHasVideo = false;
     }
@@ -313,7 +335,7 @@ package {
     }
 
     public function streamStatus():Object {
-      if (this.currentState === 'playing') {
+      if (this.currentState === STATE_PLAYING) {
         this.streamHasAudio = (this.streamHasAudio || this.client.hasAudio());
         this.streamHasVideo = (this.streamHasVideo || this.client.hasVideo());
       }
@@ -405,18 +427,24 @@ package {
     }
 
     private function onStartPlay(event:ClientEvent):void {
-      this.currentState = "playing";
-      this.callAPI(EVENT_STREAM_STARTED);
+      if (this.currentState !== STATE_STOPPING) {
+          this.currentState = STATE_PLAYING;
+          this.unmuteSpeaker();
+          this.callAPI(EVENT_STREAM_STARTED);
+      }
     }
 
     private function onPaused(event:ClientEvent):void {
-      this.currentState = "paused";
-      this.callAPI(EVENT_STREAM_PAUSED, event.data);
+      if (this.currentState !== STATE_STOPPING) {
+          this.currentState = STATE_PAUSED;
+          this.callAPI(EVENT_STREAM_PAUSED, event.data);
+      }
     }
 
     private function onStopped(event:ClientEvent):void {
       this.removeChild(this.client.getDisplayObject());
       this.client = null;
+      this.currentState = STATE_STOPPED;
       this.callAPI(EVENT_STREAM_STOPPED);
 
       /* If a new `play` has been queued, fire it */
