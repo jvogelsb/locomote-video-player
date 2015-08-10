@@ -501,7 +501,7 @@ package com.axis.rtspclient {
       private function sendOptionsReq():void {
           state = STATE_OPTIONS;
           var req:String =
-              "OPTIONS * RTSP/1.0\r\n" +
+              "OPTIONS " + urlParsed.full + " RTSP/1.0\r\n" +
               "CSeq: " + (++cSeq) + "\r\n" +
               "User-Agent: " + userAgent + "\r\n" +
               "\r\n";
