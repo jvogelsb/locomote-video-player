@@ -209,6 +209,11 @@ package com.axis.rtspclient {
                   onInterleavedData();
                   break;
 
+              case 0x54:
+                  /* ascii 'T' for TEARDOWN from server */
+                  onTeardownCommand();
+                  break;
+
               default:
                   ErrorManager.dispatchError(804, [data[0].toString(16)]);
                   stop();
@@ -411,6 +416,10 @@ package com.axis.rtspclient {
           }
       }
 
+      private function onTeardownCommand():void {
+        Logger.log("Received TEAR_DOWN from server. Closing connection...")
+        closeConnection();
+      }
       private function onInterleavedData():void {
           handle.readBytes(data, data.length);
 
@@ -629,11 +638,16 @@ package com.axis.rtspclient {
       }
 
       private function bcTimerHandler(e:TimerEvent):void {
+          connectionBroken = true;
+          closeConnection();
+          ErrorManager.dispatchError(827);
+      }
+
+      private function closeConnection():void {
           bcTimer.stop();
           bcTimer = null;
           this.keepAliveTimer.stop();
           this.keepAliveTimer = null;
-          connectionBroken = true;
           this.handle.disconnect();
           this.handle = null;
 
@@ -642,13 +656,11 @@ package com.axis.rtspclient {
           nc.removeEventListener(NetStatusEvent.NET_STATUS, onNetStatusError);
           nc.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
 
-          ErrorManager.dispatchError(827);
           dispatchEvent(new ClientEvent(ClientEvent.STOPPED));
       }
 
       private function sendKeepAlive():void {
         // Send an empty Receiver Report to keep connection alive.
-        Logger.log("Sending keep alive...")
         for (var source:String in rtpSourceDB) {
           sendRRPacket(rtpSourceDB[source]);
         }
@@ -660,8 +672,6 @@ package com.axis.rtspclient {
       }
 
       public function sendRRPacket(source:RTPSource):void {
-        Logger.log("Sending keep alive...")
-
         var header:uint = 0
         header = 0x80000000;    // version 2, no padding
         header |= 201<<16;      // RR pkt type
