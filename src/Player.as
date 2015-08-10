@@ -46,6 +46,7 @@ package {
     private static const EVENT_STREAM_ENDED:String  = "streamEnded";
     private static const EVENT_FULLSCREEN_ENTERED:String  = "fullscreenEntered";
     private static const EVENT_FULLSCREEN_EXITED:String  = "fullscreenExited";
+    private static const EVENT_CLICKED:String = "clicked";
 
     public static const STATE_STARTING:String  = "starting";
     public static const STATE_PLAYING:String  = "playing";
@@ -97,7 +98,7 @@ package {
 
       /* Fullscreen support setup */
       this.stage.doubleClickEnabled = true;
-      this.stage.addEventListener(MouseEvent.CLICK, togglePlay);
+      this.stage.addEventListener(MouseEvent.CLICK, onClicked);
       this.stage.addEventListener(MouseEvent.DOUBLE_CLICK, fullscreen);
       this.stage.addEventListener(Event.FULLSCREEN, function(event:Event):void {
         (StageDisplayState.NORMAL === stage.displayState) ? callAPI(EVENT_FULLSCREEN_EXITED) : callAPI(EVENT_FULLSCREEN_ENTERED);
@@ -145,16 +146,8 @@ package {
       }
     }
 
-    public function togglePlay(event:MouseEvent):void {
-        // Assuming a live stream, currentState == STATE_PAUSED only if not getting data. Handle as if it is playing
-        if (this.currentState == STATE_PLAYING ||
-            this.currentState === STATE_PAUSED) {
-            this.stop()
-        }
-        else if (this.currentState === STATE_STOPPED) {
-            this.start()
-        }
-        // if (this.currentState === STATE_STARTING || this.currentState === STATE_STOPPING) don't do anything
+    public function onClicked(event:MouseEvent):void {
+        this.callAPI(EVENT_CLICKED, {state: this.currentState})
     }
 
     public function videoResize():void {
@@ -318,13 +311,16 @@ package {
     }
 
     public function stop():void {
-      if (!client || !client.stop()) {
+      if (!client || this.currentState === EVENT_STREAM_STOPPED) {
+        // If already stopped, fire the event so the caller's event listener is called if they have added one.
+        this.callAPI(EVENT_STREAM_STOPPED);
+        return;
+      }
+      if (!client.stop()) {
         ErrorManager.dispatchError(810);
         return;
       }
-
       this.currentState = STATE_STOPPING;
-      this.muteSpeaker();
       this.streamHasAudio = false;
       this.streamHasVideo = false;
     }
@@ -378,6 +374,7 @@ package {
     }
 
     public function muteSpeaker():void {
+      this.savedSpeakerVolume = flash.media.SoundMixer.soundTransform.volume * 100;
       var transform:SoundTransform = new SoundTransform(0);
       flash.media.SoundMixer.soundTransform = transform;
     }
@@ -429,7 +426,6 @@ package {
     private function onStartPlay(event:ClientEvent):void {
       if (this.currentState !== STATE_STOPPING) {
           this.currentState = STATE_PLAYING;
-          this.unmuteSpeaker();
           this.callAPI(EVENT_STREAM_STARTED);
       }
     }
