@@ -15,7 +15,7 @@ package com.axis.rtspclient {
     public function APCMU() {}
 
     // Seems with our cameras that as long as the pcmu data is smaller than 1280 bytes, the flash player can play it.
-    // When it is 1280+, the audio starts to get choppy.
+    // When it is 1280+=, the audio starts to get choppy.
     // A smallPktSize(e.g. 20 bytes), seems to affect the video and make it more jittery. 640 bytes seems to work best
     // for our cameras.
     var smallPktSize:uint = 640
@@ -30,8 +30,17 @@ package com.axis.rtspclient {
       }
       var ts:Number = pkt.getTimestampMS() - initialRTPTimeStamp
 
-      for (var i:int = 0; i < pkt.bodyLength / smallPktSize; i++) {
+      var numPkts:uint =  pkt.bodyLength / smallPktSize;
+      for (var i:int = 0; i < numPkts; i++) {
         pcmuData.writeBytes(data, (i * smallPktSize) + data.position, smallPktSize);
+        dispatchEvent(new PCMUFrame(pcmuData, ts + (i * smallPktTimeMs)));
+        pcmuData.clear()
+      }
+
+      // Add any remainging bytes, 620 and 110 cameras have different audio pkt sizes.
+      var bytesLeft:uint = pkt.bodyLength - (i*smallPktSize);
+      if (bytesLeft > 0) {
+        pcmuData.writeBytes(data, (i * smallPktSize) + data.position, bytesLeft);
         dispatchEvent(new PCMUFrame(pcmuData, ts + (i * smallPktTimeMs)));
         pcmuData.clear()
       }
