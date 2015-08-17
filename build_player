@@ -8,9 +8,9 @@ version=${description%-*}
 printf "\nDescription: %s\n" $description
 printf "Version: %s\n" $version
 
-swfname="locomotePlayer-$version.swf"
+swfname="locomote_player-$version.swf"
 cp -f dist/Player.swf ../CustomerWebApp/app/bin/$swfname
 printf "\nCopied dist/Player.swf to ../CustomerWebApp/app/bin/$swfname.\n"
-jsname="locomote.min-$version.js"
+jsname="locomote_player-$version.min.js"
 cp -f dist/locomote.min.js ../CustomerWebApp/app/scripts/vendor/$jsname
 printf "Copied dist/locomote.min.js to ../CustomerWebApp/app/scripts/vendor/$jsname.\n\n"
