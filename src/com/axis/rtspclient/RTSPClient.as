@@ -517,6 +517,11 @@ package com.axis.rtspclient {
           Logger.log('RTSP OUT:', req);
           handle.writeUTFBytes(req);
 
+          /* 9/1/15 JV - We are sending an empty GET_PARAMETER call as a workaround to WEB-311(Chrome and IE flash
+             players on 64-bit Windows systems won't read data from the socket after sending "OPTIONS" until another
+             packet is sent. Send empty GET_PARAMETER to trigger the socket to fire the SOCKET_DATA event.
+           */
+          sendGetParamReq();
           prevMethod = sendOptionsReq;
       }
 
@@ -614,6 +619,12 @@ package com.axis.rtspclient {
           handle.writeUTFBytes(req);
 
           prevMethod = sendTeardownReq;
+      }
+
+      private function sendGetParamReq(): void {
+          var req:String = "GET_PARAMETER\r\n\r\n";
+          Logger.log('RTSP OUT:', req);
+          handle.writeUTFBytes(req);
       }
 
       private function onAsyncError(event:AsyncErrorEvent):void {
