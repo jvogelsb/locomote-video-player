@@ -46,6 +46,7 @@ package {
     private static const EVENT_STREAM_ENDED:String  = "streamEnded";
     private static const EVENT_FULLSCREEN_ENTERED:String  = "fullscreenEntered";
     private static const EVENT_FULLSCREEN_EXITED:String  = "fullscreenExited";
+    private static const EVENT_SERVER_TEARDOWN:String = "serverTeardown";
     private static const EVENT_CLICKED:String = "clicked";
 
     public static const STATE_STARTING:String  = "starting";
@@ -286,6 +287,7 @@ package {
       client.addEventListener(ClientEvent.START_PLAY, onStartPlay);
       client.addEventListener(ClientEvent.PAUSED, onPaused);
       client.addEventListener(ClientEvent.META, onMeta);
+      client.addEventListener(ClientEvent.TEARDOWN, onTeardown);
       client.start();
       this.newPlaylistItem = false;
     }
@@ -447,6 +449,10 @@ package {
       if (this.newPlaylistItem) {
         start();
       }
+    }
+
+    public function onTeardown(event:ClientEvent):void {
+      this.callAPI(EVENT_SERVER_TEARDOWN);
     }
 
     private function callAPI(eventName:String, data:Object = null):void {

@@ -417,8 +417,9 @@ package com.axis.rtspclient {
       }
 
       private function onTeardownCommand():void {
-        Logger.log("Received TEAR_DOWN from server. Closing connection...")
+        Logger.log("Received TEAR_DOWN from server. Closing connection...");
         closeConnection();
+        dispatchEvent(new ClientEvent(ClientEvent.TEARDOWN));
       }
       private function onInterleavedData():void {
           handle.readBytes(data, data.length);

@@ -6,6 +6,7 @@ package com.axis {
     public static const START_PLAY:String = "playing";
     public static const PAUSED:String = "paused";
     public static const META:String = "meta";
+    public static const TEARDOWN:String = "teardown";
 
     public var data:Object;
 
