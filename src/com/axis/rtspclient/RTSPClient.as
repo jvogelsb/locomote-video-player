@@ -418,6 +418,7 @@ package com.axis.rtspclient {
 
       private function onTeardownCommand():void {
         Logger.log("Received TEAR_DOWN from server. Closing connection...");
+        state = STATE_TEARDOWN;
         closeConnection();
         dispatchEvent(new ClientEvent(ClientEvent.TEARDOWN));
       }
