@@ -22,7 +22,7 @@ package com.axis.rtspclient {
       var success:Boolean = true;
       var currentMediaBlock:Object = sessionBlock;
 
-      Logger.log(dataString);
+//      Logger.log(dataString);
 
       for each (var line:String in dataString.split("\n")) {
         line = line.replace(/\r/, ''); /* Delimiter '\r\n' is allowed, if this is the case, remove '\r' too */
@@ -94,7 +94,7 @@ package com.axis.rtspclient {
           break;
 
         default:
-          Logger.log('Ignored unknown SDP directive: ' + line);
+//          Logger.log('Ignored unknown SDP directive: ' + line);
           break;
         }
       }
