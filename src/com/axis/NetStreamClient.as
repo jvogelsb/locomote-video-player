@@ -115,8 +115,10 @@ package com.axis {
       }
 
       if ('NetStream.Play.Stop' === event.info.code) {
-        dispatchEvent(new ClientEvent(ClientEvent.STOPPED));
-        ended = true;
+        if (!Player.config.loop || this.currentState == 'stopped') {
+            dispatchEvent(new ClientEvent(ClientEvent.STOPPED));
+            ended = true;
+        }
         return;
       }
 

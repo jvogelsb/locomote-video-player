@@ -62,6 +62,7 @@ package {
       'connectionTimeout': 10,
       'scaleUp': false,
       'allowFullscreen': true,
+      'loop': false,
       'debugLogger': false
     };
     private var audioTransmit:AxisTransmit = new AxisTransmit();
@@ -215,6 +216,10 @@ package {
 
       if (iconfig.debugLogger !== undefined) {
         config.debugLogger = iconfig.debugLogger;
+      }
+
+      if (iconfig.loop !== undefined) {
+        config.loop = iconfig.loop;
       }
 
       if (iconfig.connectionTimeout !== undefined) {
