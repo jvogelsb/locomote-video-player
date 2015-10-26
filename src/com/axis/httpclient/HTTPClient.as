@@ -38,7 +38,7 @@ package com.axis.httpclient {
       public function stop():Boolean {
           this.ns.dispose();
           this.nc.close();
-          this.currentState = 'stopped';
+          this.currentState = 'stopping';
           return true;
       }
 

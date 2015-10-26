@@ -318,16 +318,16 @@ package {
     }
 
     public function stop():void {
-      if (!client || this.currentState === EVENT_STREAM_STOPPED) {
+      if (!client || this.currentState === STATE_STOPPED) {
         // If already stopped, fire the event so the caller's event listener is called if they have added one.
         this.callAPI(EVENT_STREAM_STOPPED);
         return;
       }
+      this.currentState = STATE_STOPPING;
       if (!client.stop()) {
         ErrorManager.dispatchError(810);
         return;
       }
-      this.currentState = STATE_STOPPING;
       this.streamHasAudio = false;
       this.streamHasVideo = false;
     }
