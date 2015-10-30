@@ -108,7 +108,8 @@ package com.axis {
     private function onNetStatus(event:NetStatusEvent):void {
       Logger.log('NetStream status:', event.info.code);
 
-      if (this.ns.bufferTime === 0 && ('NetStream.Play.Start' === event.info.code || 'NetStream.Unpause.Notify' === event.info.code)) {
+      if ((this.ns.bufferTime === 0 || this.ns.bufferLength > this.ns.bufferTime) &&
+          ('NetStream.Play.Start' === event.info.code || 'NetStream.Unpause.Notify' === event.info.code)) {
         this.currentState = 'playing';
         dispatchEvent(new ClientEvent(ClientEvent.START_PLAY));
         return;
