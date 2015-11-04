@@ -110,6 +110,7 @@ package com.axis {
 
       if ((this.ns.bufferTime === 0 || this.ns.bufferLength > this.ns.bufferTime) &&
           ('NetStream.Play.Start' === event.info.code || 'NetStream.Unpause.Notify' === event.info.code)) {
+        ended = false;
         this.currentState = 'playing';
         dispatchEvent(new ClientEvent(ClientEvent.START_PLAY));
         return;
@@ -129,7 +130,7 @@ package com.axis {
         return;
       }
 
-      if ('NetStream.Buffer.Full' === event.info.code) {
+      if (!ended && 'NetStream.Buffer.Full' === event.info.code) {
         this.currentState = 'playing';
         dispatchEvent(new ClientEvent(ClientEvent.START_PLAY));
         return;
