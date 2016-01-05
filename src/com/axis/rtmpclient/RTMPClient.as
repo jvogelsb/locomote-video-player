@@ -24,7 +24,7 @@ package com.axis.rtmpclient {
       this.urlParsed = urlParsed;
     }
 
-    public function start():Boolean {
+    public function start(options:Object):Boolean {
       this.nc = new NetConnection();
       this.nc.addEventListener(NetStatusEvent.NET_STATUS, onConnectionStatus);
       this.nc.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncErrorHandler);
@@ -52,7 +52,6 @@ package com.axis.rtmpclient {
     public function stop():Boolean {
       this.ns.dispose();
       this.nc.close();
-      this.currentState = 'stopped';
       return true;
     }
 
@@ -67,7 +66,6 @@ package com.axis.rtmpclient {
         return false;
       }
       this.ns.pause();
-      this.currentState = 'paused';
       return true;
     }
 
@@ -79,6 +77,12 @@ package com.axis.rtmpclient {
       this.ns.resume();
       return true;
     }
+
+    public function setFrameByFrame(frameByFrame:Boolean):Boolean {
+      return false;
+    }
+
+    public function playFrames(timestamp:Number):void {}
 
     public function setBuffer(seconds:Number):Boolean {
       this.ns.bufferTime = seconds;
@@ -94,6 +98,10 @@ package com.axis.rtmpclient {
       return true;
     }
 
+    public function setKeepAlive(seconds:Number):Boolean {
+      return false;
+    }
+
     private function onConnectionStatus(event:NetStatusEvent):void {
       if ('NetConnection.Connect.Success' === event.info.code) {
         Logger.log('RTMPClient: connected');
@@ -107,6 +115,7 @@ package com.axis.rtmpclient {
       if ('NetConnection.Connect.Closed' === event.info.code) {
         this.currentState = 'stopped';
         dispatchEvent(new ClientEvent(ClientEvent.STOPPED));
+        this.ns.dispose();
       }
     }
 

@@ -17,8 +17,17 @@ package com.axis {
               message += args[i]
           }
         }
-        var functionName:String = "LocomoteMap['" + Player.locomoteID + "'].__playerEvent";
-        ExternalInterface.call(functionName, "log", args);
+      var message:String = "";
+        for (var i:String in args) {
+          message += ' ';
+          if ( !args[i] is String) {
+              message += args[i].toString();
+          } else {
+              message += args[i]
+          }
+        }
+        ExternalInterface.call("console.log", message);
+
     }
   }
 }

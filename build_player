@@ -14,3 +14,10 @@ printf "\nCopied dist/Player.swf to ../CustomerWebApp/app/bin/$swfname.\n"
 jsname="locomote_player-$version.min.js"
 cp -f dist/locomote.min.js ../CustomerWebApp/app/scripts/vendor/$jsname
 printf "Copied dist/locomote.min.js to ../CustomerWebApp/app/scripts/vendor/$jsname.\n\n"
+
+swfname="Player.swf"
+cp -f dist/Player.swf ~/Development/ngTutorial/angular-phonecat/app/$swfname
+printf "\nCopied dist/Player.swf to ~/Development/ngTutorial/angular-phonecat/app/$swfname.\n"
+jsname="locomote.min.js"
+cp -f dist/locomote.min.js ~/Development/ngTutorial/angular-phonecat/app/$jsname
+printf "Copied dist/locomote.min.js to ~/Development/ngTutorial/angular-phonecat/app/$jsname.\n\n"

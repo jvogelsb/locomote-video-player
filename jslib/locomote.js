@@ -25,7 +25,8 @@
     }
 
     // Instance already initialized. Return it.
-    if (window.LocomoteMap[tag]) {
+    if (window.LocomoteMap[tag] &&
+        window.LocomoteMap[tag].swfready) {
       return window.LocomoteMap[tag];
     }
 
@@ -116,8 +117,9 @@
       this.__playerEvent('apiReady');
     },
 
-    play: function(url) {
-      this.e.play(url);
+    play: function(url, options) {
+      options = options || {};
+      this.e.play(url, options);
       return this;
     },
 
@@ -138,6 +140,11 @@
 
     resume: function() {
       this.e.resume();
+      return this;
+    },
+
+    playFrames: function(timestamp) {
+      this.e.playFrames(timestamp);
       return this;
     },
 
@@ -194,6 +201,11 @@
       return this;
     },
 
+    loadPolicyFile: function(url) {
+      this.e.loadPolicyFile(url);
+      return this;
+    },
+
     on: function(eventName, callback) {
       this.callbacks.push({ eventName: eventName, callback: callback });
 
@@ -238,7 +250,11 @@
     },
 
     destroy: function() {
-      window.LocomoteMap[this.tag] = undefined;
+      window.LocomoteMap[this.tag] = {
+        __playerEvent: function () {},
+        __swfReady: function () {}
+      };
+      typeof this.e.stop === 'function' && this.e.stop();
       this.e.parentNode.removeChild(this.e);
       this.e = null;
     }

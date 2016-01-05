@@ -18,8 +18,8 @@ package com.axis.rtspclient {
     // When it is 1280+=, the audio starts to get choppy.
     // A smallPktSize(e.g. 20 bytes), seems to affect the video and make it more jittery. 640 bytes seems to work best
     // for our cameras.
-    var smallPktSize:uint = 640
-    var smallPktTimeMs:uint = Math.round(smallPktSize * (1000/8000))    // in ms
+    private var smallPktSize:uint = 640;
+    private var smallPktTimeMs:uint = Math.round(smallPktSize * (1000/8000));    // in ms
 
     public function onRTPPacket(pkt:RTP):void {
       var data:ByteArray = pkt.getPayload();
