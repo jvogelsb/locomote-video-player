@@ -414,7 +414,8 @@ package com.axis.rtspclient {
         return;
       }
 
-      if (200 !== parsed.code) {
+      // We get the 400 because of sending the empty RequestParams due to WEB-311. Ignore these for now.
+      if (200 !== parsed.code && 400 !== parsed.code) {
         ErrorManager.dispatchError(parsed.code);
         return;
       }
