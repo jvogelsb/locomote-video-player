@@ -1,6 +1,7 @@
 #!/bin/sh
 
 npm install
+gulp
 
 description=$(git describe --tags --long)
 version=${description%-*}
