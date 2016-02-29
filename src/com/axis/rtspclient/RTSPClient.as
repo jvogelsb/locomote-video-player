@@ -83,8 +83,6 @@ package com.axis.rtspclient {
 
     private var nc:NetConnection = null;
 
-    private var keepAliveTimer:Timer;
-
     private var rtpSourceDB:Object = {};
 
     public function RTSPClient(urlParsed:Object, handle:IRTSPHandle) {
@@ -92,7 +90,6 @@ package com.axis.rtspclient {
       this.state = STATE_INITIAL;
       this.handle = handle;
       this.urlParsed = urlParsed;
-      this.keepAliveTimer = null;
 
       handle.addEventListener('data', this.onData);
     }
@@ -458,14 +455,13 @@ package com.axis.rtspclient {
         Logger.log(parsed.headers['transport']);
 
         if (parsed.headers['session']) {
-          var session_params = parsed.headers['session'].split(';');
-          session = session_params[0];
-          if (session_params.length > 1) {
-            sessionTimeout = session_params[1].split("=")[1];
-            if (this.keepAliveTimer == null) {
-              this.keepAliveTimer = new Timer((sessionTimeout - 5) * 1000, 1);
-              this.keepAliveTimer.start()
-              this.keepAliveTimer.addEventListener(TimerEvent.TIMER_COMPLETE, keepAliveTimerHandler);
+          session = parsed.headers['session'].match(/^[^;]+/)[0];
+          var temp = parsed.headers['session'].split(";");
+          if (temp.length > 1) {
+            for (var i=1; i < temp.length; i++) {
+              if (temp[i].match(/^[^=]+/) == "timeout") {
+                setKeepAlive(temp[i].split("=")[1] - 2);
+              }
             }
           }
         }
@@ -567,8 +563,8 @@ package com.axis.rtspclient {
       case STATE_TEARDOWN:
         Logger.log('RTSPClient: STATE_TEARDOWN');
         this.bcTimer.stop();
-        this.keepAliveTimer.stop();
-        this.keepAliveTimer = null;
+        this.kaTimer.stop();
+        this.kaTimer = null;
         this.handle.disconnect();
         break;
       }
@@ -838,8 +834,6 @@ package com.axis.rtspclient {
       this.handle.disconnect();
       bcTimer.stop();
       bcTimer = null;
-      this.keepAliveTimer.stop();
-      this.keepAliveTimer = null;
       this.handle.disconnect();
       this.handle = null;
 
@@ -852,30 +846,6 @@ package com.axis.rtspclient {
         dispatchEvent(new ClientEvent(ClientEvent.STOPPED));
         this.ns.dispose();
       }
-    }
-
-    private function sendKeepAlive():void {
-      // Send an empty Receiver Report to keep connection alive.
-      for (var source:String in rtpSourceDB) {
-        sendRRPacket(rtpSourceDB[source]);
-      }
-    }
-
-    private function keepAliveTimerHandler(e:TimerEvent):void {
-        this.keepAliveTimer.start();
-        this.sendKeepAlive();
-    }
-
-    public function sendRRPacket(source:RTPSource):void {
-      var header:uint = 0
-      header = 0x80000000;    // version 2, no padding
-      header |= 201 << 16;      // RR pkt type
-      header |= 1;            // length (numWords(including header) - 1)
-
-      var pkt:ByteArray = new ByteArray();
-      pkt.writeUnsignedInt(header);
-      pkt.writeUnsignedInt(this.ssrc);
-      handle.sendRTCPPacket(pkt);
     }
   }
 }
