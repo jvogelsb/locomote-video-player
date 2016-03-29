@@ -411,16 +411,19 @@ package com.axis.rtspclient {
         return;
       }
 
-      // We get the 400 because of sending the empty RequestParams due to WEB-311. Ignore these for now.
-      if (200 !== parsed.code && 400 !== parsed.code) {
+      // We get the 400/454 because of sending the empty RequestParams due to WEB-311 when the state is INITIAL,
+      // OPTIONS, or DESCRIBE.
+      // Ignore these for now.
+      if (200 !== parsed.code && ((400 !== parsed.code && 454 !== parsed.code) || state > STATE_DESCRIBE )) {
         ErrorManager.dispatchError(parsed.code);
+        return;
+      } else if (parsed.code === 400 || parsed.code === 454) {
         return;
       }
 
       switch (state) {
       case STATE_INITIAL:
         Logger.log("RTSPClient: STATE_INITIAL");
-
 
       case STATE_OPTIONS:
         Logger.log("RTSPClient: STATE_OPTIONS");
@@ -429,7 +432,6 @@ package com.axis.rtspclient {
           this.evoStream = true;
         }
         sendDescribeReq();
-
         break;
 
       case STATE_DESCRIBE:
