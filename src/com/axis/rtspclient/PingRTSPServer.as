@@ -280,7 +280,7 @@ package com.axis.rtspclient {
 
       case STATE_DESCRIBE:
         dispatchEvent(new ClientEvent('rtsp_available'));
-        close();
+        closeConnection();
         break;
 
       case STATE_TEARDOWN:
