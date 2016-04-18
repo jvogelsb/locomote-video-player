@@ -206,6 +206,12 @@
       return this;
     },
 
+    pingRTSPServer: function(url) {
+      this.e.pingRTSPServer(url);
+      return this;
+    },
+
+
     on: function(eventName, callback) {
       this.callbacks.push({ eventName: eventName, callback: callback });
 

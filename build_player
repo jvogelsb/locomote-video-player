@@ -13,8 +13,8 @@ swfname="locomote_player-$version.swf"
 cp -f dist/Player.swf ../CustomerWebApp/app/bin/$swfname
 printf "\nCopied dist/Player.swf to ../CustomerWebApp/app/bin/$swfname.\n"
 jsname="locomote_player-$version.min.js"
-cp -f dist/locomote.min.js ../CustomerWebApp/app/scripts/vendor/$jsname
-printf "Copied dist/locomote.min.js to ../CustomerWebApp/app/scripts/vendor/$jsname.\n\n"
+cp -f dist/locomote.min.js ../CustomerWebApp/app/libs/$jsname
+printf "Copied dist/locomote.min.js to ../CustomerWebApp/app/libs/$jsname.\n\n"
 
 swfname="Player.swf"
 cp -f dist/Player.swf ~/Development/ngTutorial/angular-phonecat/app/$swfname
