@@ -43,6 +43,7 @@ package {
 
     private static const EVENT_STREAM_STARTED:String  = "streamStarted";
     private static const EVENT_STREAM_PAUSED:String  = "streamPaused";
+    private static const EVENT_STREAM_BUFFERING:String  = "streamBuffering";
     private static const EVENT_STREAM_STOPPED:String  = "streamStopped";
     private static const EVENT_FULLSCREEN_ENTERED:String  = "fullscreenEntered";
     private static const EVENT_FULLSCREEN_EXITED:String  = "fullscreenExited";
@@ -52,6 +53,7 @@ package {
     public static const STATE_STARTING:String  = "starting";
     public static const STATE_PLAYING:String  = "playing";
     public static const STATE_PAUSED:String  = "paused";
+    public static const STATE_BUFFERING:String  = "buffering";
     public static const STATE_STOPPING:String  = "stopping";
     public static const STATE_STOPPED:String  = "stopped";
 
@@ -338,6 +340,7 @@ package {
       client.addEventListener(ClientEvent.STOPPED, onStopped);
       client.addEventListener(ClientEvent.START_PLAY, onStartPlay);
       client.addEventListener(ClientEvent.PAUSED, onPaused);
+      client.addEventListener(ClientEvent.BUFFERING, onBuffering);
       client.addEventListener(ClientEvent.META, onMeta);
       client.addEventListener(ClientEvent.TEARDOWN, onTeardown);
       client.addEventListener(ClientEvent.FRAME, onFrame);
@@ -494,11 +497,20 @@ package {
       }
     }
 
+    private function onBuffering(event:ClientEvent):void {
+      if (this.currentState !== STATE_STOPPING &&
+          this.currentState !== STATE_PAUSED) {
+          this.currentState = STATE_BUFFERING;
+          this.callAPI(EVENT_STREAM_BUFFERING, event.data);
+      }
+    }
+
     private function onStopped(event:ClientEvent):void {
       this.removeChild(this.client.getDisplayObject());
       this.client.removeEventListener(ClientEvent.STOPPED, onStopped);
       this.client.removeEventListener(ClientEvent.START_PLAY, onStartPlay);
       this.client.removeEventListener(ClientEvent.PAUSED, onPaused);
+      this.client.removeEventListener(ClientEvent.BUFFERING, onBuffering);
       this.client.removeEventListener(ClientEvent.META, onMeta);
       this.client.removeEventListener(ClientEvent.FRAME, onFrame);
       this.client = null;

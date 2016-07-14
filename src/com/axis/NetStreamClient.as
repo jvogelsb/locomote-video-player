@@ -143,7 +143,7 @@ package com.axis {
           this.ns.dispose();
         } else {
           this.currentState = 'buffering';
-          dispatchEvent(new ClientEvent(ClientEvent.PAUSED, { 'reason': 'buffering' }));
+          dispatchEvent(new ClientEvent(ClientEvent.BUFFERING));
         }
         return;
       }
