@@ -10,6 +10,7 @@ package {
   import com.axis.rtmpclient.RTMPClient;
   import com.axis.rtspclient.IRTSPHandle;
   import com.axis.rtspclient.RTSPClient;
+  import com.axis.rtspclient.PingRTSPServer;
   import com.axis.rtspclient.RTSPoverHTTPHandle;
   import com.axis.rtspclient.RTSPoverHTTPAPHandle;
   import com.axis.rtspclient.RTSPoverTCPHandle;
@@ -49,6 +50,7 @@ package {
     private static const EVENT_FULLSCREEN_EXITED:String  = "fullscreenExited";
     private static const EVENT_SERVER_TEARDOWN:String = "serverTeardown";
     private static const EVENT_CLICKED:String = "clicked";
+    private static const EVENT_RTSP_SERVER_AVAILABLE:String = "rtsp_available";
 
     public static const STATE_STARTING:String  = "starting";
     public static const STATE_PLAYING:String  = "playing";
@@ -74,6 +76,7 @@ package {
     private var audioTransmit:AxisTransmit = new AxisTransmit();
     private var meta:Object = {};
     private var client:IClient;
+    private var pingServer:PingRTSPServer;
     private var urlParsed:Object;
     private var savedSpeakerVolume:Number;
     private var fullscreenAllowed:Boolean = true;
@@ -144,6 +147,7 @@ package {
       ExternalInterface.addCallback("unmuteMicrophone", unmuteMicrophone);
       ExternalInterface.addCallback("setConfig", setConfig);
       ExternalInterface.addCallback("loadPolicyFile", loadPolicyFile);
+      ExternalInterface.addCallback("pingRTSPServer", pingRTSPServer);
 
       /* Audio Transmission API */
       ExternalInterface.addCallback("startAudioTransmit", startAudioTransmit);
@@ -287,6 +291,25 @@ package {
       }
 
       start();
+    }
+
+    public function pingRTSPServer(param:* = null, options:Object = null):void {
+      var urlParsed:Object;
+      if (param is String) {
+        urlParsed = url.parse(String(param));
+      } else {
+        urlParsed = url.parse(param.url);
+        urlParsed.connect = param.url;
+        urlParsed.streamName = param.streamName;
+      }
+      pingServer = new PingRTSPServer(urlParsed, new RTSPoverTCPHandle(urlParsed));
+      addChild(this.pingServer.getDisplayObject());
+
+      pingServer.addEventListener(ClientEvent.TEARDOWN, onTeardown);
+      pingServer.addEventListener('rtsp_available', onPingResult);
+
+      this.startOptions = options;
+      pingServer.start(this.startOptions);
     }
 
     private function start():void {
@@ -525,6 +548,10 @@ package {
 
     public function onTeardown(event:ClientEvent):void {
       this.callAPI(EVENT_SERVER_TEARDOWN);
+    }
+
+    public function onPingResult(event:ClientEvent):void {
+      this.callAPI(EVENT_RTSP_SERVER_AVAILABLE, event.data);
     }
 
     private function onFrame(event:ClientEvent):void {
