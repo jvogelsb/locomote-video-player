@@ -10,11 +10,11 @@ printf "\nDescription: %s\n" $description
 printf "Version: %s\n" $version
 
 swfname="locomote_player-$version.swf"
-cp -f dist/Player.swf ../CustomerWebApp/app/bin/$swfname
-printf "\nCopied dist/Player.swf to ../CustomerWebApp/app/bin/$swfname.\n"
+cp -f dist/Player.swf ../smart-home-app/app/bin/$swfname
+printf "\nCopied dist/Player.swf to ../smart-home-app/app/bin/$swfname.\n"
 jsname="locomote_player-$version.min.js"
-cp -f dist/locomote.min.js ../CustomerWebApp/app/libs/$jsname
-printf "Copied dist/locomote.min.js to ../CustomerWebApp/app/libs/$jsname.\n\n"
+cp -f dist/locomote.min.js ../smart-home-app/app/libs/$jsname
+printf "Copied dist/locomote.min.js to ../smart-home-app/app/libs/$jsname.\n\n"
 
 swfname="Player.swf"
 cp -f dist/Player.swf ~/Development/ngTutorial/angular-phonecat/app/$swfname
